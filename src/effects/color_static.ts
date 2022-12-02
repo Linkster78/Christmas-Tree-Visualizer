@@ -11,7 +11,7 @@ export class StaticColorAnimator implements LightAnimator {
 
     prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
 
-    colorLight(_timing: Readonly<TimingInformation>): Color {
+    colorLight(_timing: Readonly<TimingInformation>, _lightIndex: number): Color {
         return this.color;
     }
 

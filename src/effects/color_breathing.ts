@@ -13,7 +13,7 @@ export class BreathingColorAnimator implements LightAnimator {
 
     prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
 
-    colorLight(timing: Readonly<TimingInformation>): Color {
+    colorLight(timing: Readonly<TimingInformation>, _lightIndex: number): Color {
         let colorIndex = Math.floor(timing.timeMillis / this.cycleLengthMillis) % this.colors.length;
         let intensity = Math.cos((timing.timeMillis / this.cycleLengthMillis) % 1 * Math.PI * 2 - Math.PI) / 2 + 0.5;
         return this.colors[colorIndex].clone().multiplyScalar(intensity);
