@@ -2,7 +2,7 @@ import './style.css';
 import {TreeVisualizationApp} from "./app";
 import {BreathingColorAnimator} from "./effects/color_breathing";
 
-const LIGHT_COUNT = 250;
+const LIGHT_COUNT = 1000;
 const TREE_RADIUS = 1.8;
 const TREE_HEIGHT = 4;
 

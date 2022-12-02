@@ -1,4 +1,4 @@
-import {LightAnimator} from "../app";
+import {LightAnimator, TimingInformation} from "../app";
 import {Color, ColorRepresentation} from "three";
 
 export class StaticColorAnimator implements LightAnimator {
@@ -9,7 +9,7 @@ export class StaticColorAnimator implements LightAnimator {
         this.color = new Color(color);
     }
     
-    animate(_timeMillis: number): Color {
+    animate(_timing: TimingInformation): Color {
         return this.color;
     }
 

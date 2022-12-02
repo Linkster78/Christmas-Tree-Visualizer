@@ -16,8 +16,13 @@ import {StaticColorAnimator} from "./effects/color_static";
 const LIGHT_OFF_COLOR = new Color(0x101010);
 const LIGHT_ON_DELTA = new Color(0xFFFFFF).sub(LIGHT_OFF_COLOR);
 
+export type TimingInformation = {
+    deltaTimeMillis: number,
+    timeMillis: number
+};
+
 export interface LightAnimator {
-    animate(timeMillis: number) : Color;
+    animate(timing: TimingInformation) : Color;
 }
 
 class TreeLight {
@@ -67,6 +72,7 @@ export class TreeVisualizationApp {
 
     private lights: TreeLight[] = [];
     private animator: LightAnimator = new StaticColorAnimator(0);
+    private lastTimeMillis: number = Date.now();
 
     constructor(treeHeight: number, treeRadius: number, initialLightCount: number) {
         this.treeHeight = treeHeight;
@@ -110,34 +116,44 @@ export class TreeVisualizationApp {
     }
 
     private setupLights(count: number) {
-        if(this.lights.length > 0) {
-            for(let i = this.lights.length - 1; i >= 0; i--) {
-                this.lights[i].removeFromScene(this.scene);
+        if(count > this.lights.length) {
+            for(let i = 0; i < count - this.lights.length; i++) {
+                this.addLight();
+            }
+        } else if(count < this.lights.length) {
+            for(let i = 0; i < this.lights.length - count; i++) {
+                let light = this.lights[this.lights.length - 1 - i];
+                light.removeFromScene(this.scene);
                 this.lights.pop();
             }
         }
+    }
 
-        for(let i = 0; i < count; i++) {
-            const heightPercent = Math.pow(Math.random(), 2);
-            const angle = Math.random() * 2 * Math.PI;
-            const radiusDistance = Math.sqrt(Math.random());
-            const position = new Vector3(
-                Math.cos(angle) * radiusDistance * this.treeRadius * (1-heightPercent),
-                heightPercent * this.treeHeight,
-                Math.sin(angle) * radiusDistance * this.treeRadius * (1-heightPercent));
+    private addLight() {
+        const heightPercent = Math.pow(Math.random(), 2);
+        const angle = Math.random() * 2 * Math.PI;
+        const radiusDistance = Math.sqrt(Math.random());
+        const position = new Vector3(
+            Math.cos(angle) * radiusDistance * this.treeRadius * (1-heightPercent),
+            heightPercent * this.treeHeight,
+            Math.sin(angle) * radiusDistance * this.treeRadius * (1-heightPercent));
 
-            const light = new TreeLight(position, 0.04);
-            light.addToScene(this.scene);
-            this.lights.push(light);
-        }
+        const light = new TreeLight(position, 0.04);
+        light.addToScene(this.scene);
+        this.lights.push(light);
     }
 
     update() {
         let timeMillis = Date.now();
+        let timing = {
+            timeMillis,
+            deltaTimeMillis: timeMillis - this.lastTimeMillis
+        };
+        this.lastTimeMillis = timeMillis;
 
         for(let i = 0; i < this.lights.length; i++) {
             let light = this.lights[i];
-            light.setColor(this.animator.animate(timeMillis));
+            light.setColor(this.animator.animate(timing));
         }
 
         this.controls.update();
