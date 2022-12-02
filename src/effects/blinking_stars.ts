@@ -1,4 +1,4 @@
-import {LightAnimator, LightCountInformation, TimingInformation} from "../app";
+import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
 import {Color, ColorRepresentation} from "three";
 
 type StarLight = {
@@ -47,7 +47,7 @@ export class BlinkingStarsAnimator implements LightAnimator {
         }
     }
 
-    colorLight(_timing: Readonly<TimingInformation>, lightIndex: number): Color {
+    colorLight(_timing: Readonly<TimingInformation>, lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
         let starLight = this.lightQueue.find(sl => sl.lightIndex == lightIndex);
         if(starLight == undefined) {
             return COLOR_BLACK;

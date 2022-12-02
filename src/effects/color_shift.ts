@@ -1,4 +1,4 @@
-import {LightAnimator, LightCountInformation, TimingInformation} from "../app";
+import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
 import {Color, ColorRepresentation} from "three";
 
 export class ShiftingColorAnimator implements LightAnimator {
@@ -13,7 +13,7 @@ export class ShiftingColorAnimator implements LightAnimator {
 
     prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
 
-    colorLight(timing: Readonly<TimingInformation>, _lightIndex: number): Color {
+    colorLight(timing: Readonly<TimingInformation>, _lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
         let colorIndex = Math.floor(timing.timeMillis / this.cycleLengthMillis) % this.colors.length;
         let nextColorIndex = colorIndex == this.colors.length - 1 ? 0 : colorIndex + 1;
         let intensity = timing.timeMillis / this.cycleLengthMillis % 1;

@@ -1,4 +1,5 @@
 import {
+    Box3,
     Camera,
     Color,
     Mesh,
@@ -12,7 +13,7 @@ import {
 import {BloomEffect, EffectComposer, EffectPass, RenderPass} from "postprocessing";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {StaticColorAnimator} from "./effects/color_static";
-import {ResizeOperation} from "./array_extensions";
+import {ResizeOperation} from "./extensions/array_extensions";
 
 const LIGHT_OFF_COLOR = new Color(0x101010);
 const LIGHT_ON_DELTA = new Color(0xFFFFFF).sub(LIGHT_OFF_COLOR);
@@ -27,9 +28,14 @@ export type LightCountInformation = {
     hasChanged: boolean
 }
 
+export type PositioningInformation = {
+    lightPosition: Vector3,
+    treeBox: Box3
+}
+
 export interface LightAnimator {
     prepareUpdate(timing: Readonly<TimingInformation>, lightInformation: Readonly<LightCountInformation>) : void;
-    colorLight(timing: Readonly<TimingInformation>, lightIndex: number) : Color;
+    colorLight(timing: Readonly<TimingInformation>, lightIndex: number, positioning: Readonly<PositioningInformation>) : Color;
 }
 
 class TreeLight {
@@ -80,7 +86,8 @@ export class TreeVisualizationApp {
     private lights: TreeLight[] = [];
     private animator: LightAnimator = new StaticColorAnimator(0);
     private lastTimeMillis: number = Date.now();
-    private hasLightCountChanged!: boolean;
+    private hasLightCountChanged: boolean = false;
+    private treeBox: Box3 = new Box3();
 
     constructor(treeHeight: number, treeRadius: number, initialLightCount: number) {
         this.treeHeight = treeHeight;
@@ -134,6 +141,8 @@ export class TreeVisualizationApp {
         } else if(resizeResult.operation == ResizeOperation.Expanded) {
             resizeResult.delta.forEach(tl => tl.addToScene(this.scene));
         }
+
+        this.treeBox.setFromPoints(this.lights.map(tl => tl.getPosition()));
     }
 
     private createLight(): TreeLight {
@@ -166,7 +175,13 @@ export class TreeVisualizationApp {
         this.animator.prepareUpdate(timing, lightInformation);
         for(let i = 0; i < this.lights.length; i++) {
             let light = this.lights[i];
-            light.setColor(this.animator.colorLight(timing, i));
+
+            let positioningInformation = {
+                lightPosition: light.getPosition(),
+                treeBox: this.treeBox
+            };
+
+            light.setColor(this.animator.colorLight(timing, i, positioningInformation));
         }
 
         this.controls.update();

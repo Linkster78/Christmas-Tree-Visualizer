@@ -1,4 +1,4 @@
-import {LightAnimator, LightCountInformation, TimingInformation} from "../app";
+import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
 import {Color, ColorRepresentation} from "three";
 
 export class StaticColorAnimator implements LightAnimator {
@@ -11,7 +11,7 @@ export class StaticColorAnimator implements LightAnimator {
 
     prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
 
-    colorLight(_timing: Readonly<TimingInformation>, _lightIndex: number): Color {
+    colorLight(_timing: Readonly<TimingInformation>, _lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
         return this.color;
     }
 
