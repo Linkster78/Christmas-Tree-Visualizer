@@ -1,7 +1,7 @@
 import {LightAnimator, LightCountInformation, TimingInformation} from "../app";
 import {Color, ColorRepresentation} from "three";
 
-export class BreathingColorAnimator implements LightAnimator {
+export class ShiftingColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
     private readonly cycleLengthMillis: number;
@@ -15,8 +15,9 @@ export class BreathingColorAnimator implements LightAnimator {
 
     colorLight(timing: Readonly<TimingInformation>, _lightIndex: number): Color {
         let colorIndex = Math.floor(timing.timeMillis / this.cycleLengthMillis) % this.colors.length;
-        let intensity = Math.cos(timing.timeMillis / this.cycleLengthMillis % 1 * Math.PI * 2 - Math.PI) / 2 + 0.5;
-        return this.colors[colorIndex].clone().multiplyScalar(intensity);
+        let nextColorIndex = colorIndex == this.colors.length - 1 ? 0 : colorIndex + 1;
+        let intensity = timing.timeMillis / this.cycleLengthMillis % 1;
+        return this.colors[colorIndex].clone().lerp(this.colors[nextColorIndex], intensity);
     }
 
 }
