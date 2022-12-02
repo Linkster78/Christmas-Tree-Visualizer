@@ -21,8 +21,14 @@ export type TimingInformation = {
     timeMillis: number
 };
 
+export type LightCountInformation = {
+    lightCount: number,
+    hasChanged: boolean
+}
+
 export interface LightAnimator {
-    animate(timing: TimingInformation) : Color;
+    prepareUpdate(timing: Readonly<TimingInformation>, lightInformation: Readonly<LightCountInformation>) : void;
+    colorLight(timing: Readonly<TimingInformation>, lightIndex: number) : Color;
 }
 
 class TreeLight {
@@ -73,6 +79,7 @@ export class TreeVisualizationApp {
     private lights: TreeLight[] = [];
     private animator: LightAnimator = new StaticColorAnimator(0);
     private lastTimeMillis: number = Date.now();
+    private hasLightCountChanged!: boolean;
 
     constructor(treeHeight: number, treeRadius: number, initialLightCount: number) {
         this.treeHeight = treeHeight;
@@ -116,6 +123,10 @@ export class TreeVisualizationApp {
     }
 
     private setupLights(count: number) {
+        if(this.lights.length != count) {
+            this.hasLightCountChanged = true;
+        }
+
         if(count > this.lights.length) {
             for(let i = 0; i < count - this.lights.length; i++) {
                 this.addLight();
@@ -151,9 +162,16 @@ export class TreeVisualizationApp {
         };
         this.lastTimeMillis = timeMillis;
 
+        let lightInformation = {
+            lightCount: this.lights.length,
+            hasChanged: this.hasLightCountChanged
+        };
+        this.hasLightCountChanged = false;
+
+        this.animator.prepareUpdate(timing, lightInformation);
         for(let i = 0; i < this.lights.length; i++) {
             let light = this.lights[i];
-            light.setColor(this.animator.animate(timing));
+            light.setColor(this.animator.colorLight(timing, i));
         }
 
         this.controls.update();
