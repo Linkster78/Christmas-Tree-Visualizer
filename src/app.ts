@@ -12,6 +12,7 @@ import {
 import {BloomEffect, EffectComposer, EffectPass, RenderPass} from "postprocessing";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {StaticColorAnimator} from "./effects/color_static";
+import {ResizeOperation} from "./array_extensions";
 
 const LIGHT_OFF_COLOR = new Color(0x101010);
 const LIGHT_ON_DELTA = new Color(0xFFFFFF).sub(LIGHT_OFF_COLOR);
@@ -122,25 +123,20 @@ export class TreeVisualizationApp {
         this.scene = new Scene();
     }
 
-    private setupLights(count: number) {
+    public setupLights(count: number) {
         if(this.lights.length != count) {
             this.hasLightCountChanged = true;
         }
 
-        if(count > this.lights.length) {
-            for(let i = 0; i < count - this.lights.length; i++) {
-                this.addLight();
-            }
-        } else if(count < this.lights.length) {
-            for(let i = 0; i < this.lights.length - count; i++) {
-                let light = this.lights[this.lights.length - 1 - i];
-                light.removeFromScene(this.scene);
-                this.lights.pop();
-            }
+        let resizeResult = this.lights.resize(count, () => this.createLight());
+        if(resizeResult.operation == ResizeOperation.Shrunk) {
+            resizeResult.delta.forEach(tl => tl.removeFromScene(this.scene));
+        } else if(resizeResult.operation == ResizeOperation.Expanded) {
+            resizeResult.delta.forEach(tl => tl.addToScene(this.scene));
         }
     }
 
-    private addLight() {
+    private createLight(): TreeLight {
         const heightPercent = Math.pow(Math.random(), 2);
         const angle = Math.random() * 2 * Math.PI;
         const radiusDistance = Math.sqrt(Math.random());
@@ -150,8 +146,7 @@ export class TreeVisualizationApp {
             Math.sin(angle) * radiusDistance * this.treeRadius * (1-heightPercent));
 
         const light = new TreeLight(position, 0.04);
-        light.addToScene(this.scene);
-        this.lights.push(light);
+        return light;
     }
 
     update() {
@@ -183,5 +178,7 @@ export class TreeVisualizationApp {
 
     setAnimator(animator: LightAnimator) {
         this.animator = animator;
+        // Resends light count change to the new animator
+        this.hasLightCountChanged = true;
     }
 }
