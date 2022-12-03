@@ -8,7 +8,9 @@ const TREE_RADIUS = 1.8;
 const TREE_HEIGHT = 4;
 
 const settings = {
-    lightCount: 400
+    lightCount: 400,
+    treeRadius: 1.8,
+    treeHeight: 4
 };
 
 const app = new TreeVisualizationApp(TREE_HEIGHT, TREE_RADIUS, settings.lightCount);
@@ -22,6 +24,14 @@ function doFrame() {
 doFrame();
 
 const gui = new GUI();
-gui.add(settings, 'lightCount', 10, 1000, 1)
+
+const generalFolder = gui.addFolder('General Settings');
+generalFolder.add(settings, 'lightCount', 10, 4000, 1)
     .name('Light Count')
     .onChange((value: number) => app.setupLights(value));
+generalFolder.add(settings, 'treeRadius', 1, 10)
+    .name('Tree Radius')
+    .onChange((value: number) => app.setTreeRadius(value));
+generalFolder.add(settings, 'treeHeight', 2, 20)
+    .name('Tree Height')
+    .onChange((value: number) => app.setTreeHeight(value));

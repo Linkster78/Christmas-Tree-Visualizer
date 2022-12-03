@@ -1,9 +1,9 @@
 import {
     Box3,
     Camera,
-    Color,
+    Color, Frustum, Matrix4,
     Mesh,
-    MeshBasicMaterial,
+    MeshBasicMaterial, Object3D,
     PerspectiveCamera,
     Scene,
     SphereGeometry,
@@ -63,14 +63,22 @@ class TreeLight {
         scene.remove(this.mesh);
     }
 
-    getPosition() : Readonly<Vector3> {
+    getPosition() : Vector3 {
         return this.mesh.position;
+    }
+
+    getNode() : Object3D {
+        return this.mesh;
+    }
+
+    isVisible() : boolean {
+        return this.mesh.visible;
     }
 }
 
 export class TreeVisualizationApp {
-    private readonly treeHeight: number;
-    private readonly treeRadius: number;
+    private treeHeight: number;
+    private treeRadius: number;
     private renderer!: WebGLRenderer;
     private composer!: EffectComposer;
     private camera!: Camera;
@@ -170,10 +178,14 @@ export class TreeVisualizationApp {
         this.hasLightCountChanged = false;
         this.hasBoundingBoxChanged = false;
 
+        let frustum = new Frustum().setFromProjectionMatrix(new Matrix4().multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse));
+
         this.animator.prepareUpdate(animatorContext);
         for(let i = 0; i < this.lights.length; i++) {
             let light = this.lights[i];
-            light.setColor(this.animator.colorLight(animatorContext, i, light.getPosition()));
+            if(frustum.containsPoint(light.getPosition()) || frustum.intersectsObject(light.getNode())) {
+                light.setColor(this.animator.colorLight(animatorContext, i, light.getPosition()));
+            }
         }
 
         this.controls.update();
@@ -187,5 +199,35 @@ export class TreeVisualizationApp {
         this.animator = animator;
         // Resends light count change to the new animator
         this.hasLightCountChanged = true;
+    }
+
+    setTreeRadius(radius: number) {
+        let transformationVector = new Vector3(radius / this.treeRadius, 1, radius / this.treeRadius);
+
+        this.boundingBox.min.multiply(transformationVector);
+        this.boundingBox.max.multiply(transformationVector);
+
+        for(let i = 0; i < this.lights.length; i++) {
+            let light = this.lights[i];
+            light.getPosition().multiply(transformationVector);
+        }
+
+        this.hasBoundingBoxChanged = true;
+        this.treeRadius = radius;
+    }
+
+    setTreeHeight(height: number) {
+        let transformationVector = new Vector3(1, height / this.treeHeight, 1);
+
+        this.boundingBox.min.multiply(transformationVector);
+        this.boundingBox.max.multiply(transformationVector);
+
+        for(let i = 0; i < this.lights.length; i++) {
+            let light = this.lights[i];
+            light.getPosition().multiply(transformationVector);
+        }
+
+        this.hasBoundingBoxChanged = true;
+        this.treeHeight = height;
     }
 }
