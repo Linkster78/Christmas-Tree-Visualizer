@@ -2,23 +2,29 @@ import {AnimatorContext, LightAnimator} from "../app";
 import {Color, ColorRepresentation, Vector3} from "three";
 import {lerpGradient} from "../extensions/threejs_utils";
 
+export enum WaveType {
+    HARD_SEPARATED,
+    SOFT_SEPARATED,
+    SMOOTH
+}
+
 export class WaveColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
     private readonly direction: Vector3;
-    private readonly isSmooth: boolean;
-    private readonly scale: number = 1;
-    private readonly cycleLengthMillis: number = 2500;
+    private readonly cycleLengthMillis: number;
+    private readonly scale: number;
+    private readonly waveType: WaveType;
 
     private gradientOrigin!: Vector3;
     private gradientVector!: Vector3;
 
-    constructor(colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]], direction: Vector3, cycleLengthMillis: number = 2500, scale: number = 1, isSmooth: boolean = false) {
+    constructor(colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]], direction: Vector3, cycleLengthMillis: number = 2500, scale: number = 1, waveType: WaveType = WaveType.SMOOTH) {
         this.colors = colors.map(cr => new Color(cr));
         this.direction = direction.normalize();
         this.cycleLengthMillis = cycleLengthMillis;
         this.scale = scale;
-        this.isSmooth = isSmooth;
+        this.waveType = waveType;
     }
 
     prepareUpdate(context: Readonly<AnimatorContext>): void {
@@ -37,8 +43,15 @@ export class WaveColorAnimator implements LightAnimator {
     colorLight(_context: Readonly<AnimatorContext>, _lightIndex: number, lightPosition: Vector3): Color {
         let pointVector = lightPosition.clone().sub(this.gradientOrigin);
         let projectedPointVector = pointVector.projectOnVector(this.gradientVector);
-        let alpha = (projectedPointVector.length() / this.gradientVector.length() + _context.timeMillis / this.cycleLengthMillis) * this.scale % 1;
-        return lerpGradient(this.colors as [Color, Color, ...Color[]], alpha, this.isSmooth);
+        let alpha = -(projectedPointVector.length() / this.gradientVector.length() - _context.timeMillis / this.cycleLengthMillis) * this.scale % 1;
+        if(alpha < 0) alpha += 1;
+
+        if(this.waveType == WaveType.HARD_SEPARATED) {
+            let colorIndex = alpha == 1 ? 0 : Math.floor(alpha * this.colors.length);
+            return this.colors[colorIndex];
+        } else {
+            return lerpGradient(this.colors as [Color, Color, ...Color[]], alpha, this.waveType == WaveType.SMOOTH);
+        }
     }
 
 }

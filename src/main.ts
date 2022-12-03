@@ -2,7 +2,7 @@ import './style.css';
 import {TreeVisualizationApp} from "./app";
 import GUI from "lil-gui";
 import {Vector3} from "three";
-import {WaveColorAnimator} from "./effects/color_wave";
+import {WaveColorAnimator, WaveType} from "./effects/color_wave";
 
 const TREE_RADIUS = 1.8;
 const TREE_HEIGHT = 4;
@@ -12,7 +12,7 @@ const settings = {
 };
 
 const app = new TreeVisualizationApp(TREE_HEIGHT, TREE_RADIUS, settings.lightCount);
-app.setAnimator(new WaveColorAnimator(['blue', 'red'], new Vector3(0, 1, 0), 2500, 1, false));
+app.setAnimator(new WaveColorAnimator(['blue', 'red', 'green'], new Vector3(0, 1, 0), 2500, 1, WaveType.SOFT_SEPARATED));
 
 function doFrame() {
     requestAnimationFrame(doFrame);
