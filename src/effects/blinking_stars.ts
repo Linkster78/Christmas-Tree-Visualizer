@@ -1,5 +1,5 @@
-import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
-import {Color, ColorRepresentation} from "three";
+import {AnimatorContext, LightAnimator} from "../app";
+import {Color, ColorRepresentation, Vector3} from "three";
 
 type StarLight = {
     lightIndex: number,
@@ -33,21 +33,21 @@ export class BlinkingStarsAnimator implements LightAnimator {
         return { lightIndex: lightIndex, color: this.colors[colorIndex] };
     }
 
-    prepareUpdate(timing: Readonly<TimingInformation>, lightInformation: Readonly<LightCountInformation>) {
-        if(lightInformation.hasChanged) {
-            let starCount = this.starPercentage * lightInformation.lightCount;
-            this.lightQueue.resize(starCount, () => this.createStarLight(lightInformation.lightCount));
+    prepareUpdate(context: Readonly<AnimatorContext>) {
+        if(context.hasLightCountChanged) {
+            let starCount = this.starPercentage * context.lightCount;
+            this.lightQueue.resize(starCount, () => this.createStarLight(context.lightCount));
         }
 
-        this.timeAccumulatorMillis += timing.deltaTimeMillis;
+        this.timeAccumulatorMillis += context.deltaTimeMillis;
         while(this.timeAccumulatorMillis >= this.lightInterval) {
             this.lightQueue.shift();
-            this.lightQueue.push(this.createStarLight(lightInformation.lightCount));
+            this.lightQueue.push(this.createStarLight(context.lightCount));
             this.timeAccumulatorMillis -= this.lightInterval;
         }
     }
 
-    colorLight(_timing: Readonly<TimingInformation>, lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
+    colorLight(_context: Readonly<AnimatorContext>, lightIndex: number, _lightPosition: Vector3): Color {
         let starLight = this.lightQueue.find(sl => sl.lightIndex == lightIndex);
         if(starLight == undefined) {
             return COLOR_BLACK;

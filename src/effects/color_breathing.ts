@@ -1,5 +1,5 @@
-import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
-import {Color, ColorRepresentation} from "three";
+import {AnimatorContext, LightAnimator} from "../app";
+import {Color, ColorRepresentation, Vector3} from "three";
 
 export class BreathingColorAnimator implements LightAnimator {
 
@@ -11,11 +11,11 @@ export class BreathingColorAnimator implements LightAnimator {
         this.cycleLengthMillis = cycleLengthMillis;
     }
 
-    prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
+    prepareUpdate(_context: Readonly<AnimatorContext>) {}
 
-    colorLight(timing: Readonly<TimingInformation>, _lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
-        let colorIndex = Math.floor(timing.timeMillis / this.cycleLengthMillis) % this.colors.length;
-        let intensity = Math.cos(timing.timeMillis / this.cycleLengthMillis % 1 * Math.PI * 2 - Math.PI) / 2 + 0.5;
+    colorLight(context: Readonly<AnimatorContext>, _lightIndex: number, _lightPosition: Vector3): Color {
+        let colorIndex = Math.floor(context.timeMillis / this.cycleLengthMillis) % this.colors.length;
+        let intensity = Math.cos(context.timeMillis / this.cycleLengthMillis % 1 * Math.PI * 2 - Math.PI) / 2 + 0.5;
         return this.colors[colorIndex].clone().multiplyScalar(intensity);
     }
 

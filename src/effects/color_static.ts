@@ -1,5 +1,5 @@
-import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
-import {Color, ColorRepresentation} from "three";
+import {AnimatorContext, LightAnimator} from "../app";
+import {Color, ColorRepresentation, Vector3} from "three";
 
 export class StaticColorAnimator implements LightAnimator {
 
@@ -9,9 +9,9 @@ export class StaticColorAnimator implements LightAnimator {
         this.color = new Color(color);
     }
 
-    prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
+    prepareUpdate(_context: Readonly<AnimatorContext>) {}
 
-    colorLight(_timing: Readonly<TimingInformation>, _lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
+    colorLight(_context: Readonly<AnimatorContext>, _lightIndex: number, _lightPosition: Vector3): Color {
         return this.color;
     }
 

@@ -18,24 +18,18 @@ import {ResizeOperation} from "./extensions/array_extensions";
 const LIGHT_OFF_COLOR = new Color(0x101010);
 const LIGHT_ON_DELTA = new Color(0xFFFFFF).sub(LIGHT_OFF_COLOR);
 
-export type TimingInformation = {
-    deltaTimeMillis: number,
+export type AnimatorContext = {
     timeMillis: number
+    deltaTimeMillis: number,
+    lightCount: number,
+    hasLightCountChanged: boolean,
+    boundingBox: Box3,
+    hasBoundingBoxChanged : boolean
 };
 
-export type LightCountInformation = {
-    lightCount: number,
-    hasChanged: boolean
-}
-
-export type PositioningInformation = {
-    lightPosition: Vector3,
-    treeBox: Box3
-}
-
 export interface LightAnimator {
-    prepareUpdate(timing: Readonly<TimingInformation>, lightInformation: Readonly<LightCountInformation>) : void;
-    colorLight(timing: Readonly<TimingInformation>, lightIndex: number, positioning: Readonly<PositioningInformation>) : Color;
+    prepareUpdate(context: Readonly<AnimatorContext>) : void;
+    colorLight(context: Readonly<AnimatorContext>, lightIndex: number, lightPosition: Vector3) : Color;
 }
 
 class TreeLight {
@@ -87,7 +81,8 @@ export class TreeVisualizationApp {
     private animator: LightAnimator = new StaticColorAnimator(0);
     private lastTimeMillis: number = Date.now();
     private hasLightCountChanged: boolean = false;
-    private treeBox: Box3 = new Box3();
+    private boundingBox: Box3 = new Box3();
+    private hasBoundingBoxChanged: boolean = false;
 
     constructor(treeHeight: number, treeRadius: number, initialLightCount: number) {
         this.treeHeight = treeHeight;
@@ -112,7 +107,7 @@ export class TreeVisualizationApp {
     }
 
     private setupCamera() {
-        this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, .5, 500);
+        this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 500);
         this.camera.position.set(0, this.treeHeight / 2, 10);
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -133,6 +128,7 @@ export class TreeVisualizationApp {
     public setupLights(count: number) {
         if(this.lights.length != count) {
             this.hasLightCountChanged = true;
+            this.hasBoundingBoxChanged = true;
         }
 
         let resizeResult = this.lights.resize(count, () => this.createLight());
@@ -142,7 +138,7 @@ export class TreeVisualizationApp {
             resizeResult.delta.forEach(tl => tl.addToScene(this.scene));
         }
 
-        this.treeBox.setFromPoints(this.lights.map(tl => tl.getPosition()));
+        this.boundingBox.setFromPoints(this.lights.map(tl => tl.getPosition()));
     }
 
     private createLight(): TreeLight {
@@ -160,28 +156,24 @@ export class TreeVisualizationApp {
 
     update() {
         let timeMillis = Date.now();
-        let timing = {
+
+        let animatorContext = {
             timeMillis,
-            deltaTimeMillis: timeMillis - this.lastTimeMillis
-        };
-        this.lastTimeMillis = timeMillis;
-
-        let lightInformation = {
+            deltaTimeMillis: timeMillis - this.lastTimeMillis,
             lightCount: this.lights.length,
-            hasChanged: this.hasLightCountChanged
+            hasLightCountChanged: this.hasLightCountChanged,
+            boundingBox: this.boundingBox.clone(),
+            hasBoundingBoxChanged: this.hasBoundingBoxChanged
         };
-        this.hasLightCountChanged = false;
 
-        this.animator.prepareUpdate(timing, lightInformation);
+        this.lastTimeMillis = timeMillis;
+        this.hasLightCountChanged = false;
+        this.hasBoundingBoxChanged = false;
+
+        this.animator.prepareUpdate(animatorContext);
         for(let i = 0; i < this.lights.length; i++) {
             let light = this.lights[i];
-
-            let positioningInformation = {
-                lightPosition: light.getPosition(),
-                treeBox: this.treeBox
-            };
-
-            light.setColor(this.animator.colorLight(timing, i, positioningInformation));
+            light.setColor(this.animator.colorLight(animatorContext, i, light.getPosition()));
         }
 
         this.controls.update();

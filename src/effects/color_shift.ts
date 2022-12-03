@@ -1,22 +1,22 @@
-import {LightAnimator, LightCountInformation, PositioningInformation, TimingInformation} from "../app";
-import {Color, ColorRepresentation} from "three";
+import {AnimatorContext, LightAnimator} from "../app";
+import {Color, ColorRepresentation, Vector3} from "three";
 
 export class ShiftingColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
     private readonly cycleLengthMillis: number;
 
-    constructor(colors: [ColorRepresentation, ...ColorRepresentation[]], cycleLengthMillis: number = 4000) {
+    constructor(colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]], cycleLengthMillis: number = 4000) {
         this.colors = colors.map(cr => new Color(cr));
         this.cycleLengthMillis = cycleLengthMillis;
     }
 
-    prepareUpdate(_timing: Readonly<TimingInformation>, _lightInformation: Readonly<LightCountInformation>) {}
+    prepareUpdate(_context: Readonly<AnimatorContext>) {}
 
-    colorLight(timing: Readonly<TimingInformation>, _lightIndex: number, _positioning: Readonly<PositioningInformation>): Color {
-        let colorIndex = Math.floor(timing.timeMillis / this.cycleLengthMillis) % this.colors.length;
+    colorLight(context: Readonly<AnimatorContext>, _lightIndex: number, _lightPosition: Vector3): Color {
+        let colorIndex = Math.floor(context.timeMillis / this.cycleLengthMillis) % this.colors.length;
         let nextColorIndex = colorIndex == this.colors.length - 1 ? 0 : colorIndex + 1;
-        let intensity = timing.timeMillis / this.cycleLengthMillis % 1;
+        let intensity = context.timeMillis / this.cycleLengthMillis % 1;
         return this.colors[colorIndex].clone().lerp(this.colors[nextColorIndex], intensity);
     }
 

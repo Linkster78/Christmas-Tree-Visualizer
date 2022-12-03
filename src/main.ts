@@ -1,7 +1,8 @@
 import './style.css';
 import {TreeVisualizationApp} from "./app";
-import {BlinkingStarsAnimator} from "./effects/blinking_stars";
 import GUI from "lil-gui";
+import {Vector3} from "three";
+import {WaveColorAnimator} from "./effects/color_wave";
 
 const TREE_RADIUS = 1.8;
 const TREE_HEIGHT = 4;
@@ -11,7 +12,7 @@ const settings = {
 };
 
 const app = new TreeVisualizationApp(TREE_HEIGHT, TREE_RADIUS, settings.lightCount);
-app.setAnimator(new BlinkingStarsAnimator());
+app.setAnimator(new WaveColorAnimator(['blue', 'red'], new Vector3(0, 1, 0), 2500, 1, false));
 
 function doFrame() {
     requestAnimationFrame(doFrame);
