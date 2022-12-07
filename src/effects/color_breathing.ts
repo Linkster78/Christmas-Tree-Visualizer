@@ -1,14 +1,19 @@
 import {AnimatorContext, LightAnimator} from "../app";
 import {Color, ColorRepresentation, Vector3} from "three";
 
+export interface BreathingColorAnimatorParameters {
+    colors: [ColorRepresentation, ...ColorRepresentation[]],
+    cycleLengthMillis?: number
+}
+
 export class BreathingColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
     private readonly cycleLengthMillis: number;
 
-    constructor(colors: [ColorRepresentation, ...ColorRepresentation[]], cycleLengthMillis: number = 4000) {
-        this.colors = colors.map(cr => new Color(cr));
-        this.cycleLengthMillis = cycleLengthMillis;
+    constructor(parameters: BreathingColorAnimatorParameters) {
+        this.colors = parameters.colors.map(cr => new Color(cr));
+        this.cycleLengthMillis = parameters.cycleLengthMillis ?? 4000;
     }
 
     prepareUpdate(_context: Readonly<AnimatorContext>) {}

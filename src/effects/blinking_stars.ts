@@ -1,12 +1,18 @@
 import {AnimatorContext, LightAnimator} from "../app";
 import {Color, ColorRepresentation, Vector3} from "three";
 
+const COLOR_BLACK = new Color(0);
+
 type StarLight = {
     lightIndex: number,
     color: Color
 };
 
-const COLOR_BLACK = new Color(0);
+export interface BlinkingStarAnimatorParameters {
+    colors?: [ColorRepresentation, ...ColorRepresentation[]],
+    starPercentage?: number,
+    lightInterval?: number
+}
 
 export class BlinkingStarsAnimator implements LightAnimator {
 
@@ -17,10 +23,10 @@ export class BlinkingStarsAnimator implements LightAnimator {
     private timeAccumulatorMillis: number = 0;
     private lightQueue: StarLight[] = [];
 
-    constructor(colors: [ColorRepresentation, ...ColorRepresentation[]] = ['white'], starPercentage: number = 0.2, lightInterval: number = 80) {
-        this.colors = colors.map(c => new Color(c));
-        this.starPercentage = starPercentage;
-        this.lightInterval = lightInterval;
+    constructor(parameters: BlinkingStarAnimatorParameters) {
+        this.colors = parameters.colors?.map(c => new Color(c)) ?? [new Color('white')];
+        this.starPercentage = parameters.starPercentage ?? 0.2;
+        this.lightInterval = parameters.lightInterval ?? 80;
     }
 
     private createStarLight(lightCount: number): StarLight {

@@ -8,6 +8,14 @@ export enum WaveType {
     SMOOTH
 }
 
+export interface WaveColorAnimatorParameters {
+    colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]],
+    direction?: Vector3,
+    cycleLengthMillis?: number,
+    scale?: number
+    waveType?: WaveType
+}
+
 export class WaveColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
@@ -19,12 +27,12 @@ export class WaveColorAnimator implements LightAnimator {
     private gradientOrigin!: Vector3;
     private gradientVector!: Vector3;
 
-    constructor(colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]], direction: Vector3, cycleLengthMillis: number = 2500, scale: number = 1, waveType: WaveType = WaveType.SMOOTH) {
-        this.colors = colors.map(cr => new Color(cr));
-        this.direction = direction.normalize();
-        this.cycleLengthMillis = cycleLengthMillis;
-        this.scale = scale;
-        this.waveType = waveType;
+    constructor(parameters: WaveColorAnimatorParameters) {
+        this.colors = parameters.colors.map(cr => new Color(cr));
+        this.direction = parameters.direction?.normalize() ?? new Vector3(0, 1, 0);
+        this.cycleLengthMillis = parameters.cycleLengthMillis ?? 2500;
+        this.scale = parameters.scale ?? 1;
+        this.waveType = parameters.waveType ?? WaveType.SMOOTH;
     }
 
     prepareUpdate(context: Readonly<AnimatorContext>): void {

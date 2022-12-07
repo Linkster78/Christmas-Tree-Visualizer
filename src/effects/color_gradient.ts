@@ -2,6 +2,11 @@ import {AnimatorContext, LightAnimator} from "../app";
 import {Color, ColorRepresentation, Vector3} from "three";
 import {lerpGradient} from "../extensions/threejs_utils";
 
+export interface GradientColorAnimatorParameters {
+    colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]],
+    direction?: Vector3
+}
+
 export class GradientColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
@@ -10,9 +15,9 @@ export class GradientColorAnimator implements LightAnimator {
     private gradientOrigin!: Vector3;
     private gradientVector!: Vector3;
 
-    constructor(colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]], direction: Vector3) {
-        this.colors = colors.map(cr => new Color(cr));
-        this.direction = direction.normalize();
+    constructor(parameters: GradientColorAnimatorParameters) {
+        this.colors = parameters.colors.map(cr => new Color(cr));
+        this.direction = parameters.direction?.normalize() ?? new Vector3(0, 1, 0);
     }
 
     prepareUpdate(context: Readonly<AnimatorContext>): void {

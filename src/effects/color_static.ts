@@ -1,12 +1,16 @@
 import {AnimatorContext, LightAnimator} from "../app";
 import {Color, ColorRepresentation, Vector3} from "three";
 
+export interface StaticColorAnimatorParameters {
+    color: ColorRepresentation
+}
+
 export class StaticColorAnimator implements LightAnimator {
 
     private readonly color: Color;
 
-    constructor(color: ColorRepresentation) {
-        this.color = new Color(color);
+    constructor(parameters: StaticColorAnimatorParameters) {
+        this.color = new Color(parameters.color ?? 0);
     }
 
     prepareUpdate(_context: Readonly<AnimatorContext>) {}

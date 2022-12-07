@@ -1,14 +1,18 @@
 import {AnimatorContext, LightAnimator} from "../app";
 import {Color, ColorRepresentation, Vector3} from "three";
 
+export interface MixedColorAnimatorParameters {
+    colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]]
+}
+
 export class MixedColorAnimator implements LightAnimator {
 
     private readonly colors: Color[];
 
     private lightColors: Color[] = [];
 
-    constructor(colors: [ColorRepresentation, ColorRepresentation, ...ColorRepresentation[]]) {
-        this.colors = colors.map(cr => new Color(cr));
+    constructor(parameters: MixedColorAnimatorParameters) {
+        this.colors = parameters.colors.map(cr => new Color(cr));
     }
 
     prepareUpdate(context: Readonly<AnimatorContext>): void {

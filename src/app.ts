@@ -17,6 +17,7 @@ import {ResizeOperation} from "./extensions/array_extensions";
 
 const LIGHT_OFF_COLOR = new Color(0x101010);
 const LIGHT_ON_DELTA = new Color(0xFFFFFF).sub(LIGHT_OFF_COLOR);
+const OFF_ANIMATOR = new StaticColorAnimator({color: 0});
 
 export type AnimatorContext = {
     timeMillis: number
@@ -86,7 +87,7 @@ export class TreeVisualizationApp {
     private scene!: Scene;
 
     private lights: TreeLight[] = [];
-    private animator: LightAnimator = new StaticColorAnimator(0);
+    private animator: LightAnimator = OFF_ANIMATOR;
     private lastTimeMillis: number = Date.now();
     private hasLightCountChanged: boolean = false;
     private boundingBox: Box3 = new Box3();
@@ -195,8 +196,8 @@ export class TreeVisualizationApp {
         this.composer.render();
     }
 
-    setAnimator(animator: LightAnimator) {
-        this.animator = animator;
+    setAnimator(animator: LightAnimator | undefined) {
+        this.animator = animator ?? OFF_ANIMATOR;
         // Resends light count change to the new animator
         this.hasLightCountChanged = true;
     }
