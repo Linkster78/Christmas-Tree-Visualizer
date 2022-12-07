@@ -166,6 +166,8 @@ export class TreeVisualizationApp {
     update() {
         let timeMillis = Date.now();
 
+        // In case the animator is changed mid-frame, we want to keep the same animator for every update.
+        let animatorSnapshot = this.animator;
         let animatorContext = {
             timeMillis,
             deltaTimeMillis: timeMillis - this.lastTimeMillis,
@@ -181,11 +183,11 @@ export class TreeVisualizationApp {
 
         let frustum = new Frustum().setFromProjectionMatrix(new Matrix4().multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse));
 
-        this.animator.prepareUpdate(animatorContext);
+        animatorSnapshot.prepareUpdate(animatorContext);
         for(let i = 0; i < this.lights.length; i++) {
             let light = this.lights[i];
             if(frustum.containsPoint(light.getPosition()) || frustum.intersectsObject(light.getNode())) {
-                light.setColor(this.animator.colorLight(animatorContext, i, light.getPosition()));
+                light.setColor(animatorSnapshot.colorLight(animatorContext, i, light.getPosition()));
             }
         }
 
@@ -198,8 +200,9 @@ export class TreeVisualizationApp {
 
     setAnimator(animator: LightAnimator | undefined) {
         this.animator = animator ?? OFF_ANIMATOR;
-        // Resends light count change to the new animator
+        // Resends light count and bounding box change to the animator
         this.hasLightCountChanged = true;
+        this.hasBoundingBoxChanged = true;
     }
 
     setTreeRadius(radius: number) {
